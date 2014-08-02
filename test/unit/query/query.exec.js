@@ -96,5 +96,42 @@ describe('Collection Query', function() {
       });
     });
 
+    describe('when using it as a promise', function () {
+
+      before(function getTheQueryResultsForTestsBelow(done) {
+        var self = this;
+
+        async.auto({
+          promiseUsage: function (cb) {
+            query.find()
+              .exec()
+              .then(function(results){
+                cb(null, results);
+              })
+              .fail(function(err){
+                cb(err);
+              });
+          },
+          cbUsage: function (cb) {
+            query.find().exec(cb);
+          }
+        }, function asyncComplete (err, async_data) {
+          // Save results for use below
+          self._error = err;
+          self._results = async_data;
+          done();
+        });
+      });
+
+      it('should not fail', function() {
+        assert(this._results);
+        assert(!this._error);
+      });
+
+      it('should work the same as it does with a callback', function() {
+        assert(this._results.cbUsage.length === this._results.promiseUsage.length);
+      });
+    });
+
   });
 });
